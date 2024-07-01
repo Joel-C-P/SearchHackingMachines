@@ -21,6 +21,34 @@ function ctrl_c()
 
 
 trap ctrl_c INT
+function helpPanel(){
+  echo -e "\n[+] Uso:"
+  
+}
 
-sleep 10
+function searchMachine(){
+  echo="$1"
+
+  echo "$machineName"
+}
+
+# Indicadores
+declare -i parameter_counter=0 
+
+
+while getopts "m:h" arg; do 
+
+  case $arg in 
+    m) machineName=$OPTARG; let parameter_counter+=1;; 
+    h) ;;
+  esac
+done 
+
+if [ $parameter_counter -eq 1 ]; then
+ searchMachine $machineName
+else
+  helpPanel
+  
+fi
+
 
