@@ -39,11 +39,7 @@ function helpPanel(){
   echo -e "\t${purpleColour}h)${endColour} ${grayColour}Mostrar este panel de ayuda${endColour}\n"  
 }
 
-function searchMachine(){
-  echo="$1"
 
-  echo "$machineName"
-}
 
 function update_Files(){
   
@@ -84,6 +80,15 @@ function update_Files(){
 
 }
 
+function searchMachine(){
+  machineName="$1"
+  
+  echo -e "\n ${yellowColour}[+]${endColour} ${grayColour}Listando las propiedades de la maquina${endColour} $machineName ${grayColour}:${endColour}\n"
+
+
+  cat bundle.js | awk "/name: \"$machineName\"/,/resuelta:/" | grep -vE "id:|sku:|resuelta:" | tr -d '"' | sed 's/^ *//'
+
+}
 
 
 
