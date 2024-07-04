@@ -36,6 +36,8 @@ function helpPanel(){
   
   echo -e "\t${purpleColour}m)${endColour} ${grayColour}Buscar por un nombre de maquina${endColour}"  
 
+  echo -e "\t${purpleColour}i)${endColour} ${grayColour}Buscar por direccion IP${endColour}"  
+  
   echo -e "\t${purpleColour}h)${endColour} ${grayColour}Mostrar este panel de ayuda${endColour}\n"  
 }
 
@@ -86,22 +88,33 @@ function searchMachine(){
   echo -e "\n ${yellowColour}[+]${endColour} ${grayColour}Listando las propiedades de la maquina${endColour} $machineName ${grayColour}:${endColour}\n"
 
 
-  cat bundle.js | awk "/name: \"$machineName\"/,/resuelta:/" | grep -vE "id:|sku:|resuelta:" | tr -d '"' | sed 's/^ *//'
+  cat bundle.js | awk "/name: \"$machineName\"/,/resuelta:/" | grep -vE "id:|sku:|resuelta:" | tr -d '"' | tr -d "," | sed 's/^ *//'
 
 }
 
 
 
+function searchIP(){
 
+  ipAddress="$1"
+
+  machineName="$(cat bundle.js | grep "ip: \"$ipAddress\"" -B 3 | grep "name:" | awk 'NF{print $NF}' | tr -d '"' | tr -d ",")"
+
+  echo -e "\n${yellowColour}[+]${endColour} ${grayColour}La maquina del IP:${endColour} ${blueColour}$ipAddress${endColour} es ${redColour}$machineName${endColour}"
+ 
+
+  searchMachine $machineName
+}
 # Indicadores
 declare -i parameter_counter=0 
 
 
-while getopts "m:uh" arg; do 
+while getopts "m:ui:h" arg; do 
 
   case $arg in 
     m) machineName=$OPTARG; let parameter_counter+=1;;
     u) let parameter_counter+=2;;
+    i) ipAddress=$OPTARG; let parameter_counter+=3;;
     h) ;;
   esac
 done 
@@ -110,6 +123,10 @@ if [ $parameter_counter -eq 1 ]; then
  searchMachine $machineName
 elif [ $parameter_counter -eq 2 ]; then
   update_Files
+elif [ $parameter_counter -eq 3 ]; then
+  searchIP $ipAddress
+
+
 else
   helpPanel
   
