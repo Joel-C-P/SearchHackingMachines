@@ -38,6 +38,8 @@ function helpPanel(){
 
   echo -e "\t${purpleColour}i)${endColour} ${grayColour}Buscar por direccion IP${endColour}"  
   
+  echo -e "\t${purpleColour}y)${endColour} ${grayColour}Obtener link de youtube${endColour}" 
+
   echo -e "\t${purpleColour}h)${endColour} ${grayColour}Mostrar este panel de ayuda${endColour}\n"  
 }
 
@@ -84,12 +86,17 @@ function update_Files(){
 
 function searchMachine(){
   machineName="$1"
-  
-  echo -e "\n ${yellowColour}[+]${endColour} ${grayColour}Listando las propiedades de la maquina${endColour} $machineName ${grayColour}:${endColour}\n"
+  machineName_checker="$(cat bundle.js | awk "/name: \"$machineName\"/,/resuelta:/" | grep -vE "id:|sku:|resuelta:" | tr -d '"' | tr -d ',' | sed 's/^ *//')"
 
+  if [ "$machineName_checker" ]; then
 
-  cat bundle.js | awk "/name: \"$machineName\"/,/resuelta:/" | grep -vE "id:|sku:|resuelta:" | tr -d '"' | tr -d "," | sed 's/^ *//'
+    echo -e "\n ${yellowColour}[+]${endColour} ${grayColour}Listando las propiedades de la maquina${endColour} $machineName ${grayColour}:${endColour}\n"
 
+    cat bundle.js | awk "/name: \"$machineName\"/,/resuelta:/" | grep -vE "id:|sku:|resuelta:" | tr -d '"' | tr -d "," | sed 's/^ *//'
+
+  else
+    echo -e "\n ${redColour}[!] La maquina no existe o esta mal escrito${endColour}\n"
+  fi    
 }
 
 
@@ -100,21 +107,46 @@ function searchIP(){
 
   machineName="$(cat bundle.js | grep "ip: \"$ipAddress\"" -B 3 | grep "name:" | awk 'NF{print $NF}' | tr -d '"' | tr -d ",")"
 
-  echo -e "\n${yellowColour}[+]${endColour} ${grayColour}La maquina del IP:${endColour} ${blueColour}$ipAddress${endColour} es ${redColour}$machineName${endColour}"
- 
+  if [ "$machineName" ]; then  
+    echo -e "\n${yellowColour}[+]${endColour} ${grayColour}La maquina del IP:${endColour} ${blueColour}$ipAddress${endColour} es ${redColour}$machineName${endColour}"
+  else
+    
+    echo -e "\n ${redColour}[!] La IP es incorrecta o no existe${endColour}\n"
+    
+  fi
 
-  searchMachine $machineName
+  
+}
+
+function getYoutubeLink(){
+  #cat bundle.js | awk "/name: \"Tentacle\"/,/resuelta:/" | grep -vE "id:|sku:|resuelta:" | tr -d '"' | sed 's/^ *//' | grep "youtube" | awk 'NF{print $NF}'
+  
+  machineName="$1"
+  youtubeLink="$(cat bundle.js | awk "/name: \"$machineName\"/,/resuelta:/" | grep -vE "id:|sku:|resuelta:" | tr -d '"' | sed 's/^ *//' | grep "youtube" | awk 'NF{print $NF}')"
+  
+    if [ $youtubeLink ]; then
+
+
+      echo -e "\n ${yellowColour}[+] ${endColour}EL turorial para esta maquina esta en este enlace:${purpleColour} $youtubeLink ${endColour}\n"
+
+    else
+      
+      echo -e "\n ${redColour}[!] La Maquina no existe o esta mal escrito${endColour}\n"
+    fi
+
+
 }
 # Indicadores
 declare -i parameter_counter=0 
 
 
-while getopts "m:ui:h" arg; do 
+while getopts "m:ui:y:h" arg; do 
 
   case $arg in 
-    m) machineName=$OPTARG; let parameter_counter+=1;;
+    m) machineName="$OPTARG"; let parameter_counter+=1;;
     u) let parameter_counter+=2;;
-    i) ipAddress=$OPTARG; let parameter_counter+=3;;
+    i) ipAddress="$OPTARG"; let parameter_counter+=3;;
+    y) machineName="$OPTARG"; let parameter_counter+=4;;
     h) ;;
   esac
 done 
@@ -126,6 +158,9 @@ elif [ $parameter_counter -eq 2 ]; then
 elif [ $parameter_counter -eq 3 ]; then
   searchIP $ipAddress
 
+
+elif [ $parameter_counter -eq 4 ]; then
+  getYoutubeLink $machineName
 
 else
   helpPanel
