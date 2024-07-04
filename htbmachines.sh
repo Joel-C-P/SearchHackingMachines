@@ -36,6 +36,8 @@ function helpPanel(){
   
   echo -e "\t${purpleColour}m)${endColour} ${grayColour}Buscar por un nombre de maquina${endColour}"  
 
+  echo -e "\t${purpleColour}d)${endColour} ${grayColour}Buscar por dificultad de la maquina${endColour}"  
+
   echo -e "\t${purpleColour}i)${endColour} ${grayColour}Buscar por direccion IP${endColour}"  
   
   echo -e "\t${purpleColour}y)${endColour} ${grayColour}Obtener link de youtube${endColour}" 
@@ -133,6 +135,26 @@ function getYoutubeLink(){
       
       echo -e "\n ${redColour}[!] La Maquina no existe o esta mal escrito${endColour}\n"
     fi
+}
+
+function getMachinesDifficulty(){
+
+  machineName="$1"
+
+  results_check="$(cat bundle.js | grep "dificultad: \"$difficulty\"" -B 5 | grep "name" | awk 'NF{print $NF}' | tr -d '"' | tr -d "," | column)" 
+
+  if [ "$results_check" ]; then
+
+    echo -e "\n ${yellowColour}[+] ${endColour}Representando las maquinas que poseen una dificultad: $difficulty :\n"
+  
+
+    cat bundle.js | grep "dificultad: \"$difficulty\"" -B 5 | grep "name" | awk 'NF{print $NF}' | tr -d '"' | tr -d "," | column
+
+  else
+  
+    
+    echo -e "\n ${redColour}[!] La dificultad indicada no existe${endColour}\n"
+  fi
 
 
 }
@@ -140,13 +162,14 @@ function getYoutubeLink(){
 declare -i parameter_counter=0 
 
 
-while getopts "m:ui:y:h" arg; do 
+while getopts "m:ui:y:d:h" arg; do 
 
   case $arg in 
     m) machineName="$OPTARG"; let parameter_counter+=1;;
     u) let parameter_counter+=2;;
     i) ipAddress="$OPTARG"; let parameter_counter+=3;;
     y) machineName="$OPTARG"; let parameter_counter+=4;;
+    d) difficulty="$OPTARG"; let parameter_counter+=5;;
     h) ;;
   esac
 done 
@@ -162,6 +185,9 @@ elif [ $parameter_counter -eq 3 ]; then
 elif [ $parameter_counter -eq 4 ]; then
   getYoutubeLink $machineName
 
+elif [ $parameter_counter -eq 5 ]; then 
+
+  getMachinesDifficulty $difficulty
 else
   helpPanel
   
