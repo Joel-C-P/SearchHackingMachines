@@ -36,7 +36,9 @@ function helpPanel(){
   
   echo -e "\t${purpleColour}m)${endColour} ${grayColour}Buscar por un nombre de maquina${endColour}"  
 
-  echo -e "\t${purpleColour}d)${endColour} ${grayColour}Buscar por dificultad de la maquina${endColour}"  
+  echo -e "\t${purpleColour}d)${endColour} ${grayColour}Buscar por dificultad de la maquina${endColour}"
+
+  echo -e "\t${purpleColour}o)${endColour} ${grayColour}Buscar por Sistema Operativo${endColour}"
 
   echo -e "\t${purpleColour}i)${endColour} ${grayColour}Buscar por direccion IP${endColour}"  
   
@@ -141,14 +143,14 @@ function getMachinesDifficulty(){
 
   machineName="$1"
 
-  results_check="$(cat bundle.js | grep "dificultad: \"$difficulty\"" -B 5 | grep "name" | awk 'NF{print $NF}' | tr -d '"' | tr -d "," | column)" 
+  results_check="$(cat bundle.js | grep "dificultad: \"$difficulty\"" -B 5 | grep "name:" | awk 'NF{print $NF}' | tr -d '"' | tr -d "," | column)" 
 
   if [ "$results_check" ]; then
 
     echo -e "\n ${yellowColour}[+] ${endColour}Representando las maquinas que poseen una dificultad: $difficulty :\n"
   
 
-    cat bundle.js | grep "dificultad: \"$difficulty\"" -B 5 | grep "name" | awk 'NF{print $NF}' | tr -d '"' | tr -d "," | column
+    cat bundle.js | grep "dificultad: \"$difficulty\"" -B 5 | grep "name:" | awk 'NF{print $NF}' | tr -d '"' | tr -d "," | column
 
   else
   
@@ -158,11 +160,35 @@ function getMachinesDifficulty(){
 
 
 }
+
+function getOSMachines(){
+
+  os=$1
+
+  os_results="$(cat bundle.js | grep "so: \"Linux\"" -B 5 | grep "name:" | awk 'NF{print $NF}' | tr -d '"' | tr -d "," | column)" 
+
+
+  if [ "$os_results" ]; then
+  
+    echo -e "\n ${yellowColour}[+]${endColour} Mostrando las maquinas cuyo sistema operativo es $os\n\n"
+  
+    
+    cat bundle.js | grep "so: \"$os\"" -B 5 | grep "name:" | awk 'NF{print $NF}' | tr -d '"' | tr -d "," | column    
+  
+  else
+
+    echo -e "\n Ese SO no existe o no esta contemplado"
+    
+  fi
+
+
+
+}
 # Indicadores
 declare -i parameter_counter=0 
 
 
-while getopts "m:ui:y:d:h" arg; do 
+while getopts "m:ui:y:d:o:h" arg; do 
 
   case $arg in 
     m) machineName="$OPTARG"; let parameter_counter+=1;;
@@ -170,6 +196,7 @@ while getopts "m:ui:y:d:h" arg; do
     i) ipAddress="$OPTARG"; let parameter_counter+=3;;
     y) machineName="$OPTARG"; let parameter_counter+=4;;
     d) difficulty="$OPTARG"; let parameter_counter+=5;;
+    o) os="$OPTARG"; let parameter_counter+=6;;
     h) ;;
   esac
 done 
@@ -188,6 +215,10 @@ elif [ $parameter_counter -eq 4 ]; then
 elif [ $parameter_counter -eq 5 ]; then 
 
   getMachinesDifficulty $difficulty
+elif [ $parameter_counter -eq 6 ]; then
+
+  getOSMachines $os
+
 else
   helpPanel
   
