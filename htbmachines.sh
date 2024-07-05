@@ -40,6 +40,8 @@ function helpPanel(){
 
   echo -e "\t${purpleColour}o)${endColour} ${grayColour}Buscar por Sistema Operativo${endColour}"
 
+  echo -e "\t${purpleColour}s)${endColour} ${grayColour}Buscar por Skill${endColour}"
+
   echo -e "\t${purpleColour}i)${endColour} ${grayColour}Buscar por direccion IP${endColour}"  
   
   echo -e "\t${purpleColour}y)${endColour} ${grayColour}Obtener link de youtube${endColour}" 
@@ -197,13 +199,31 @@ function getOSDifficultyMachines(){
   fi
 
 }
+
+function getSkill(){
+
+  skill="$1"
+
+  check_skill="$(cat bundle.js | grep "skill" -B 6 | grep "$skill" -i -B 6 | grep "name:" | awk 'NF{print $NF}' | tr -d '"' | tr -d "," | column)"
+
+  if [ "$check_skill" ]; then
+
+    echo -e " [+] Las siguientes maquinas usan la skill: $skill"
+     
+    cat bundle.js | grep "skill" -B 6 | grep "$skill" -i -B 6 | grep "name:" | awk 'NF{print $NF}' | tr -d '"' | tr -d "," | column
+
+  else
+    echo -e "\n ${redColour}[!] La siguiente skill no existe o esta mal escrita ${endColour}\n"
+
+  fi
+}
 # Indicadores
 declare -i parameter_counter=0 
 #Chivatos
 declare -i chivato_difficulty=0 
 declare -i chivato_os=0
 
-while getopts "m:ui:y:d:o:h" arg; do 
+while getopts "m:ui:y:d:o:s:h" arg; do 
 
   case $arg in 
     m) machineName="$OPTARG"; let parameter_counter+=1;;
@@ -212,6 +232,7 @@ while getopts "m:ui:y:d:o:h" arg; do
     y) machineName="$OPTARG"; let parameter_counter+=4;;
     d) difficulty="$OPTARG"; chivato_difficulty=1; let parameter_counter+=5;;
     o) os="$OPTARG"; chivato_os=1; let parameter_counter+=6;;
+    s) skill="$OPTARG"; let parameter_counter+=7;;
     h) ;;
   esac
 done 
@@ -233,6 +254,9 @@ elif [ $parameter_counter -eq 5 ]; then
 elif [ $parameter_counter -eq 6 ]; then
 
   getOSMachines $os
+elif [ $parameter_counter -eq 7 ]; then
+
+    getSkill "$skill"
 
 elif [ $chivato_difficulty -eq 1 ] && [ $chivato_os -eq 1 ]; then 
   getOSDifficultyMachines $difficulty $os
